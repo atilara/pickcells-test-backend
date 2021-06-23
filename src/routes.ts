@@ -1,14 +1,16 @@
-import express from 'express';
+import { Router, Request, Response, request } from 'express';
 
 import CourseController from './controllers/CourseController';
 import ClassController from './controllers/ClassController';
 
-const routes = express.Router();
+const routes = Router();
 
 const courseController = new CourseController();
 const classController = new ClassController();
 
 routes.get('/courses', courseController.index);
+
+routes.get('/courses/:id', courseController.show);
 
 routes.get('/classes', classController.index);
 
