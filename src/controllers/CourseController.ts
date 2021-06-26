@@ -3,16 +3,23 @@ import knex from '../database/connection';
 
 class CourseController {
   async index(request: Request, response: Response) {
-    const courses = await knex('course').select('*');
+    const coursesIds = await knex('course').pluck('course.id');
 
-    const serializedCourses = courses.map(({ id, name, type }) => {
-      return {
-        id,
-        name,
-        type,
-      };
+    const course_classes = await knex('course_classes')
+      .join('course', 'course.id', '=', 'course_classes.course_id')
+      .whereIn('course_classes.course_id', coursesIds)
+      .where('course_classes.mandatory', '=', '1')
+      .select([{ id: 'course_classes.course_id' }, { name: 'course.name' }])
+      .groupBy('course_classes.course_id')
+      .sum({ mandatory_workload: 'course_classes.workload' })
+      .orderBy([
+        { column: 'mandatory_workload', order: 'desc' },
+        { column: 'course.type', order: 'desc' },
+      ]);
+
+    return response.json({
+      course_classes,
     });
-    return response.json(serializedCourses);
   }
 
   async show(request: Request, response: Response) {
@@ -35,14 +42,6 @@ class CourseController {
         'course_classes.workload',
         'course_classes.mandatory',
       ]);
-
-    // SOMATÓRIA DA CARGA HORÁRIA OBRIGATÓRIA UTILIZANDO SUM DO SQL
-    // const summedMandatoryWordload = await knex('class')
-    //   .join('course_classes', 'class.id', '=', 'course_classes.class_id')
-    //   .where('course_classes.course_id', id)
-    //   .andWhere('course_classes.mandatory', 1)
-    //   .sum('course_classes.workload')
-    //   .first();
 
     var mandatoryWorkload = 0;
     classes.map((collegeClass) => {
