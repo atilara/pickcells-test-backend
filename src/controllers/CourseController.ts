@@ -47,15 +47,17 @@ class CourseController {
         'course_classes.mandatory',
       ]);
 
-    var mandatoryWorkload = 0;
-    classes.map((collegeClass) => {
-      if (collegeClass.mandatory) mandatoryWorkload += collegeClass.workload;
-    });
+    const mandatory_workload = await knex('class')
+      .join('course_classes', 'class.id', '=', 'course_classes.class_id')
+      .where('course_classes.course_id', id)
+      .andWhere('course_classes.mandatory', '=', '1')
+      .sum({ sum: 'course_classes.workload' })
+      .first();
 
     return response.json({
       course: { name: course.name, type: course.type },
       classes,
-      mandatoryWorkload,
+      mandatory_workload,
     });
   }
 }
