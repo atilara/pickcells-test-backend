@@ -9,7 +9,11 @@ class CourseController {
       .join('course', 'course.id', '=', 'course_classes.course_id')
       .whereIn('course_classes.course_id', coursesIds)
       .where('course_classes.mandatory', '=', '1')
-      .select([{ id: 'course_classes.course_id' }, { name: 'course.name' }])
+      .select([
+        { id: 'course_classes.course_id' },
+        { name: 'course.name' },
+        'course.type',
+      ])
       .groupBy('course_classes.course_id')
       .sum({ mandatory_workload: 'course_classes.workload' })
       .orderBy([
