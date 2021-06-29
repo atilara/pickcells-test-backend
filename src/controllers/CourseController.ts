@@ -42,6 +42,7 @@ class CourseController {
       .join('course_classes', 'class.id', '=', 'course_classes.class_id')
       .where('course_classes.course_id', id)
       .select([
+        'class.id',
         'class.name',
         'course_classes.workload',
         'course_classes.mandatory',
